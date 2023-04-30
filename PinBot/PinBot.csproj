@@ -46,6 +46,12 @@
     <ProjectReference Include="..\PinBot.Models\PinBot.Models.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="pinbot.png">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
   <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

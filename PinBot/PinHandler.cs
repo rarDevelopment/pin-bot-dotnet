@@ -103,12 +103,12 @@ public class PinHandler
     }
 
     /// <summary>
-    ///     
+    ///     Pins using the webhook and saves to the databases
     /// </summary>
     /// <param name="messageToPin">The message to pin</param>
     /// <param name="pinningUserName">The name of the user or process performing the pin (for display only)</param>
     /// <param name="pinSystemMessage"></param>
-    /// <returns></returns>
+    /// <returns><see cref="PinHandlerResult"/></returns>
     public async Task<PinHandlerResult> HandlePin(IMessage messageToPin, string pinningUserName, IMessage? pinSystemMessage = null)
     {
         if (messageToPin.Channel is not IGuildChannel guildChannel)
@@ -128,6 +128,27 @@ public class PinHandler
                 IsSuccess = false,
                 ErrorMessage = "No pin webhook found in the database for the specified Guild."
             };
+        }
+
+        var getExistingPinnedMessage = await _pinBusinessLayer.GetPinnedMessage(messageToPin.Id.ToString(), guildChannel.GuildId.ToString());
+
+        if (getExistingPinnedMessage != null)
+        {
+            var channelWithPin = await guildChannel.Guild.GetTextChannelAsync(Convert.ToUInt64(getExistingPinnedMessage.ChannelId));
+            var existingPin = await channelWithPin.GetMessageAsync(Convert.ToUInt64(getExistingPinnedMessage.NewPinMessageId));
+            if (existingPin != null)
+            {
+                var existingEmbed = _discordFormatter.BuildRegularEmbed(
+                    $"{pinningUserName} pinned a message",
+                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()})");
+                return new PinHandlerResult
+                {
+                    IsSuccess = true,
+                    EmbedToSend = existingEmbed
+                };
+            }
+
+            await _pinBusinessLayer.DeleteByMessageId(messageToPin.Id.ToString(), guildChannel.GuildId.ToString());
         }
 
         var pinChannel = await guildChannel.Guild.GetChannelAsync(Convert.ToUInt64(pinWebhook.ChannelId));
@@ -247,9 +268,20 @@ public class PinHandler
         {
             try
             {
-                if (pin != null)
+                if (pin == null)
                 {
-                    await HandlePin(pin, "BetterPinBot");
+                    continue;
+                }
+
+                var result = await HandlePin(pin, "BetterPinBot");
+                if (!result.IsSuccess)
+                {
+                    continue;
+                }
+
+                if (pin is IUserMessage messageToUnpin)
+                {
+                    await messageToUnpin.UnpinAsync();
                 }
             }
             catch (Exception ex)

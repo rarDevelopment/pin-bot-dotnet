@@ -72,7 +72,7 @@ public class SetChannelSlashCommand : InteractionModuleBase<SocketInteractionCon
 
         if (channel is IIntegrationChannel webhookChannel)
         {
-            var webhook = await webhookChannel.CreateWebhookAsync("PinBot (Webhook)", Stream.Null);
+            var webhook = await webhookChannel.CreateWebhookAsync("PinBot (Webhook)", File.Open("pinbot.png", FileMode.Open));
             if (webhook != null)
             {
                 var didSave = await _pinBusinessLayer.SetWebhook(webhook.Id.ToString(), Context.Guild.Id.ToString(), webhook.Token, webhookChannel.Id.ToString());
