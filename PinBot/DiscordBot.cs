@@ -66,6 +66,7 @@ namespace PinBot
         private void SetEvents()
         {
             _client.MessageReceived += msg => Publish(new MessageReceivedNotification(msg));
+            _client.MessageDeleted += (msg, channel) => Publish(new MessageDeletedNotification(msg, channel));
         }
 
         private Task Publish<TEvent>(TEvent @event) where TEvent : INotification

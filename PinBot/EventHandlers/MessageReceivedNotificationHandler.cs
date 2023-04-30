@@ -9,7 +9,6 @@ public class MessageReceivedNotificationHandler : INotificationHandler<MessageRe
     private readonly IPinBusinessLayer _pinBusinessLayer;
     private readonly PinHandler _pinHandler;
     private readonly ILogger<DiscordBot> _logger;
-    private const string PinMessageText = "pinned a message to this channel. See all the pins.";
 
     public MessageReceivedNotificationHandler(IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler, ILogger<DiscordBot> logger)
     {
@@ -18,39 +17,54 @@ public class MessageReceivedNotificationHandler : INotificationHandler<MessageRe
         _logger = logger;
     }
 
-    public async Task Handle(MessageReceivedNotification notification, CancellationToken cancellationToken)
+    public Task Handle(MessageReceivedNotification notification, CancellationToken cancellationToken)
     {
-        if (notification.Message.Channel is SocketTextChannel guildChannel &&
-            notification.Message.Type == MessageType.ChannelPinnedMessage &&
-            notification.Message.Reference != null)
+        _ = Task.Run(async () =>
         {
+            if (notification.Message.Channel is not SocketTextChannel guildChannel ||
+                notification.Message.Type != MessageType.ChannelPinnedMessage ||
+                notification.Message.Reference == null) return Task.CompletedTask;
             if (!notification.Message.Reference.MessageId.IsSpecified)
             {
-                _logger.LogError("This was a pin message but with no message reference id. This might be a cache issue.");
-                return;
+                _logger.LogError(
+                    "This was a pin message but with no message reference id. This might be a cache issue.");
+                return Task.CompletedTask;
             }
+
             var settings = await _pinBusinessLayer.GetSettings(guildChannel.Guild.Id.ToString());
-            if (settings != null)
+            if (settings == null)
             {
-                var messageToPin = await guildChannel.GetMessageAsync(notification.Message.Reference.MessageId.Value);
-                var pinHandlerResult = await _pinHandler.HandlePin(messageToPin, notification.Message.Author.Username, notification.Message);
-                if (pinHandlerResult.IsSuccess)
+                return Task.CompletedTask;
+            }
+
+            var messageToPin =
+                await guildChannel.GetMessageAsync(notification.Message.Reference.MessageId.Value);
+            var pinHandlerResult = await _pinHandler.HandlePin(messageToPin,
+                notification.Message.Author.Username, notification.Message);
+            if (pinHandlerResult.IsSuccess)
+            {
+                if (messageToPin is IUserMessage messageToUnpin)
                 {
-                    if (messageToPin is IUserMessage messageToUnpin)
-                    {
-                        await messageToUnpin.UnpinAsync();
-                    }
-                    else
-                    {
-                        await notification.Message.Channel.SendMessageAsync("There was an error unpinning this message from the channel.");
-                    }
-                    await notification.Message.Channel.SendMessageAsync(embed: pinHandlerResult.EmbedToSend);
+                    await messageToUnpin.UnpinAsync();
                 }
                 else
                 {
-                    await notification.Message.Channel.SendMessageAsync("There was an error pinning this message.");
+                    await notification.Message.Channel.SendMessageAsync(
+                        "There was an error unpinning this message from the channel.");
                 }
+
+                await notification.Message.Channel.SendMessageAsync(embed: pinHandlerResult.EmbedToSend,
+                    messageReference: new MessageReference(messageToPin.Id,
+                        guildChannel.Id,
+                        guildChannel.Guild.Id,
+                        false));
             }
-        }
+            else
+            {
+                await notification.Message.Channel.SendMessageAsync("There was an error pinning this message.");
+            }
+            return Task.CompletedTask;
+        }, cancellationToken);
+        return Task.CompletedTask;
     }
 }
