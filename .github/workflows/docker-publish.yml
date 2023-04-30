@@ -17,8 +17,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
-      - 
-        name: Calculate Publishing Variables
+      - name: Calculate Publishing Variables
         run: |
           # docker.pkg.github.com/
           IMAGE_ID=${{ github.repository }}
@@ -39,19 +38,15 @@ jobs:
           echo -n "$DOCKERDEPLOY_HOST_USER" | wc -c
           echo -n "${{env.DOCKERDEPLOY_HOST_USER }}" | wc -c
           echo -n "${{secrets.DOCKERDEPLOY_HOST_USER }}" | wc -c
-      - 
-        name: Build Bot
+      - name: Build Bot
         run: docker build -t ${{ env.IMAGE_NAME }} .
-      - 
-        name: Echoing the publishing variables
+      - name: Echoing the publishing variables
         run: |
           echo IMAGE_ID="${{env.IMAGE_ID}}"
           echo VERSION="${{env.VERSION}}"
-      - 
-        name: Log into registry
+      - name: Log into registry
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
-      - 
-        name: Push ${{ env.IMAGE_NAME }} image
+      - name: Push ${{ env.IMAGE_NAME }} image
         run: |
           CURRENT_ID=ghcr.io/$IMAGE_ID
           docker tag ${{ env.IMAGE_NAME }} $CURRENT_ID:$VERSION
@@ -59,8 +54,7 @@ jobs:
 
           docker push $CURRENT_ID:$VERSION
           docker push $CURRENT_ID:latest
-      - 
-        name: Deploy to Server via SSH action
+      - name: Deploy to Server via SSH action
         uses: appleboy/ssh-action@v0.1.3
         with:
           HOST: ${{ secrets.DOCKERDEPLOY_HOST }}

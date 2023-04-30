@@ -42,6 +42,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\PinBot.BusinessLayer\PinBot.BusinessLayer.csproj" />
     <ProjectReference Include="..\PinBot.Models\PinBot.Models.csproj" />
   </ItemGroup>
 

@@ -11,6 +11,8 @@ using Microsoft.Extensions.Hosting;
 using PinBot;
 using Serilog;
 using System.Reflection;
+using PinBot.BusinessLayer;
+using PinBot.DataLayer;
 using PinBot.Models;
 
 var builder = new HostBuilder();
@@ -63,7 +65,11 @@ builder.ConfigureServices((host, services) =>
     services.AddSingleton(databaseSettings);
     services.AddSingleton(versionSettings);
 
+    services.AddScoped<IPinDataLayer, PinDataLayer>();
+    services.AddScoped<IPinBusinessLayer, PinBusinessLayer>();
     services.AddScoped<IDiscordFormatter, DiscordFormatter>();
+    services.AddScoped<IDiscordFormatter, DiscordFormatter>();
+    services.AddScoped<PinHandler>();
 
     services.AddSingleton(x => new InteractionService(x.GetRequiredService<DiscordSocketClient>()));
 
