@@ -95,7 +95,7 @@ public class PinDataLayer : IPinDataLayer
     public async Task<bool> SetWebhook(string webhookId, string guildId, string token, string channelId)
     {
         var webhook = await GetExistingWebhook(guildId);
-        if (webhook == null)
+        if (webhook != null)
         {
             var filter = Builders<WebhookEntity>.Filter.Eq(w => w.GuildId, guildId);
             var update = Builders<WebhookEntity>.Update
@@ -107,10 +107,14 @@ public class PinDataLayer : IPinDataLayer
             return updateResult.MatchedCount == 1 && updateResult.ModifiedCount == 1;
         }
 
-        webhook.WebhookId = webhookId;
-        webhook.Token = token;
-        webhook.ChannelId = channelId;
-        webhook.GuildId = guildId;
+        webhook = new WebhookEntity
+        {
+            WebhookId = webhookId,
+            Token = token,
+            ChannelId = channelId,
+            GuildId = guildId
+        };
+
         try
         {
             await _webhookCollection.InsertOneAsync(webhook);
@@ -148,7 +152,7 @@ public class PinDataLayer : IPinDataLayer
     public async Task<bool> SaveSettings(string guildId, bool enableAutoMode)
     {
         var settings = await GetExistingSettings(guildId);
-        if (settings == null)
+        if (settings != null)
         {
             var filter = Builders<SettingsEntity>.Filter.Eq(w => w.GuildId, guildId);
             var update = Builders<SettingsEntity>.Update
@@ -158,8 +162,12 @@ public class PinDataLayer : IPinDataLayer
             return updateResult.MatchedCount == 1 && updateResult.ModifiedCount == 1;
         }
 
-        settings.GuildId = guildId;
-        settings.EnableAutoMode = enableAutoMode;
+        settings = new SettingsEntity
+        {
+            GuildId = guildId,
+            EnableAutoMode = enableAutoMode
+        };
+
         try
         {
             await _settingsCollection.InsertOneAsync(settings);
