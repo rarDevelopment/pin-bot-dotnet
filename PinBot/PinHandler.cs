@@ -102,7 +102,14 @@ public class PinHandler
         return embedsToReturn;
     }
 
-    public async Task<PinHandlerResult> HandlePin(IMessage messageToPin, string pinningUserName, IMessage pinSystemMessage)
+    /// <summary>
+    ///     
+    /// </summary>
+    /// <param name="messageToPin">The message to pin</param>
+    /// <param name="pinningUserName">The name of the user or process performing the pin (for display only)</param>
+    /// <param name="pinSystemMessage"></param>
+    /// <returns></returns>
+    public async Task<PinHandlerResult> HandlePin(IMessage messageToPin, string pinningUserName, IMessage? pinSystemMessage = null)
     {
         if (messageToPin.Channel is not IGuildChannel guildChannel)
         {
@@ -191,12 +198,69 @@ public class PinHandler
             $"{pinningUserName} pinned a message",
             $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()})");
 
-        await pinSystemMessage.DeleteAsync();
+        if (pinSystemMessage != null)
+        {
+            await pinSystemMessage.DeleteAsync();
+        }
 
         return new PinHandlerResult
         {
             IsSuccess = true,
             EmbedToSend = embedToReturn
+        };
+    }
+
+    public async Task<BulkPinHandlerResult> ProcessPinBacklogInChannel(SocketTextChannel channel)
+    {
+        var pinWebhook = await _pinBusinessLayer.GetWebhook(channel.Guild.Id.ToString());
+        if (pinWebhook == null)
+        {
+            return new BulkPinHandlerResult
+            {
+                IsSuccess = false,
+                ErrorMessage = "No pin channel configured! Use the config command to set your pin channel."
+            };
+        }
+
+        var pinChannel = channel.Guild.GetTextChannel(Convert.ToUInt64(pinWebhook.ChannelId));
+        if (pinChannel == null)
+        {
+            return new BulkPinHandlerResult
+            {
+                IsSuccess = false,
+                ErrorMessage = "Pin channel is gone or missing! Please set a new pin channel."
+            };
+        }
+
+        var pins = await channel.GetPinnedMessagesAsync();
+        if (!pins.Any())
+        {
+            return new BulkPinHandlerResult
+            {
+                IsSuccess = true
+            };
+        }
+
+        var sortedPins = pins.Reverse();
+
+        foreach (var pin in sortedPins)
+        {
+            try
+            {
+                if (pin != null)
+                {
+                    await HandlePin(pin, "BetterPinBot");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Could not pin message with identifier {pin?.Id.ToString() ?? "[no identifier]"} - {ex.Message}");
+            }
+        }
+
+        return new BulkPinHandlerResult
+        {
+            IsSuccess = true
         };
     }
 

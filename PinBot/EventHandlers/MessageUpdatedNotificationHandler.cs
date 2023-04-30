@@ -1,5 +1,4 @@
 ﻿using Discord.Webhook;
-using Discord;
 using MediatR;
 using PinBot.BusinessLayer;
 using PinBot.Notifications;
@@ -32,7 +31,7 @@ public class MessageUpdatedNotificationHandler : INotificationHandler<MessageUpd
 
             if (guildChannel?.Guild == null || guild == null)
             {
-                _logger.LogError($"Could not retrieve guild for updated message");
+                _logger.LogError("Could not retrieve guild for updated message");
                 return Task.CompletedTask;
             }
 
