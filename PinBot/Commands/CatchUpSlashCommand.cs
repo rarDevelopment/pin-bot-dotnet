@@ -34,11 +34,11 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
             return;
         }
 
-        if (!requestingUser.GuildPermissions.ManageMessages)
+        if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
                 _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
-                    "Sorry, you must have the Manage Messages permission to pin messages.",
+                    "Sorry, you must have the Administrator permission to run the bulk pin catch-up command.",
                     Context.User));
             return;
         }

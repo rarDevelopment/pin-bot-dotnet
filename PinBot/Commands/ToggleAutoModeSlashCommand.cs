@@ -34,11 +34,11 @@ public class ToggleAutoModeSlashCommand : InteractionModuleBase<SocketInteractio
             return;
         }
 
-        if (!requestingUser.GuildPermissions.ManageMessages)
+        if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
                 _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
-                    "Sorry, you must have the Manage Messages permission to pin messages.",
+                    "Sorry, you must have the Administrator permission to toggle auto mode.",
                     Context.User));
             return;
         }

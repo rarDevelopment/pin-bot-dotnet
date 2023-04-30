@@ -35,11 +35,11 @@ public class SetChannelSlashCommand : InteractionModuleBase<SocketInteractionCon
             return;
         }
 
-        if (!requestingUser.GuildPermissions.ManageMessages)
+        if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
                 _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
-                    "Sorry, you must have the Manage Messages permission to pin messages.",
+                    "Sorry, you must have the Administrator permission to change the pin channel.",
                     Context.User));
             return;
         }
