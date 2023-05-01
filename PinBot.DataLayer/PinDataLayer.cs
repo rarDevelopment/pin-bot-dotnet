@@ -141,7 +141,15 @@ public class PinDataLayer : IPinDataLayer
     private async Task<SettingsEntity?> GetExistingSettings(string guildId)
     {
         var filter = Builders<SettingsEntity>.Filter.Eq(p => p.GuildId, guildId);
-        return await _settingsCollection.Find(filter).FirstOrDefaultAsync();
+        var settings = await _settingsCollection.Find(filter).FirstOrDefaultAsync();
+        if (settings != null)
+        {
+            return settings;
+        }
+
+        // initialize settings to default
+        var didSave = await SaveSettings(guildId, true);
+        return didSave ? await _settingsCollection.Find(filter).FirstOrDefaultAsync() : null;
     }
 
     public async Task<Settings?> GetSettings(string guildId)
@@ -151,7 +159,8 @@ public class PinDataLayer : IPinDataLayer
 
     public async Task<bool> SaveSettings(string guildId, bool enableAutoMode)
     {
-        var settings = await GetExistingSettings(guildId);
+        var settingsFilter = Builders<SettingsEntity>.Filter.Eq(p => p.GuildId, guildId);
+        var settings = await _settingsCollection.Find(settingsFilter).FirstOrDefaultAsync();
         if (settings != null)
         {
             var filter = Builders<SettingsEntity>.Filter.Eq(w => w.GuildId, guildId);
