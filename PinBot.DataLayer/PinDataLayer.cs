@@ -188,4 +188,12 @@ public class PinDataLayer : IPinDataLayer
         }
         return true;
     }
+
+    public async Task<bool> SetPinVoteCount(string guildId, int pinVoteCount)
+    {
+        var filter = Builders<SettingsEntity>.Filter.Eq("guildId", guildId);
+        var update = Builders<SettingsEntity>.Update.Set(config => config.PinVoteCount, pinVoteCount);
+        var updateResult = await _settingsCollection.UpdateOneAsync(filter, update);
+        return updateResult.ModifiedCount == 1 || updateResult.MatchedCount == 1;
+    }
 }

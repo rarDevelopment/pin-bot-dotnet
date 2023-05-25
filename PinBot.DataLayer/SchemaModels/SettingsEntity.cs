@@ -13,13 +13,16 @@ public class SettingsEntity
     public string GuildId { get; set; }
     [BsonElement("enableAutoMode")]
     public bool EnableAutoMode { get; set; }
+    [BsonElement("pinVoteCount")]
+    public int PinVoteCount { get; set; }
 
     public Settings ToDomain()
     {
         return new Settings
         {
             GuildId = GuildId,
-            EnableAutoMode = EnableAutoMode
+            EnableAutoMode = EnableAutoMode,
+            PinVoteCount = PinVoteCount
         };
     }
 }

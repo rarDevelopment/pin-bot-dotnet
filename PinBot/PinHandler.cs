@@ -134,13 +134,13 @@ public class PinHandler
 
         if (getExistingPinnedMessage != null)
         {
-            var channelWithPin = await guildChannel.Guild.GetTextChannelAsync(Convert.ToUInt64(getExistingPinnedMessage.ChannelId));
+            var channelWithPin = await guildChannel.Guild.GetTextChannelAsync(Convert.ToUInt64(getExistingPinnedMessage.PinChannelId));
             var existingPin = await channelWithPin.GetMessageAsync(Convert.ToUInt64(getExistingPinnedMessage.NewPinMessageId));
             if (existingPin != null)
             {
                 var existingEmbed = _discordFormatter.BuildRegularEmbed(
-                    $"{pinningUserName} pinned a message",
-                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()})");
+                    "Message Already Pinned",
+                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()}).");
                 return new PinHandlerResult
                 {
                     IsSuccess = true,
@@ -216,8 +216,8 @@ public class PinHandler
         }
 
         var embedToReturn = _discordFormatter.BuildRegularEmbed(
-            $"{pinningUserName} pinned a message",
-            $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()})");
+            "Message Pinned",
+            $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()}).");
 
         if (pinSystemMessage != null)
         {

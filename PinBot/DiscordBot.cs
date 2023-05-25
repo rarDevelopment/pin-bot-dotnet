@@ -68,6 +68,7 @@ public class DiscordBot : BackgroundService
         _client.MessageReceived += msg => Publish(new MessageReceivedNotification(msg));
         _client.MessageDeleted += (msg, channel) => Publish(new MessageDeletedNotification(msg, channel));
         _client.MessageUpdated += (oldMessage, newMessage, channel) => Publish(new MessageUpdatedNotification(oldMessage, newMessage, channel));
+        _client.ReactionAdded += (cacheableMessage, cacheableChannel, reaction) => Publish(new ReactionAddedNotification(cacheableMessage, cacheableChannel, reaction));
     }
 
     private Task Publish<TEvent>(TEvent @event) where TEvent : INotification

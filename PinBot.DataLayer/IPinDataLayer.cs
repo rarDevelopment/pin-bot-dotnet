@@ -21,4 +21,5 @@ public interface IPinDataLayer
     Task<Webhook?> GetWebhook(string guildId);
     Task<Settings?> GetSettings(string guildId);
     Task<bool> SaveSettings(string guildId, bool enableAutoMode);
+    Task<bool> SetPinVoteCount(string guildId, int pinVoteCount);
 }
