@@ -63,4 +63,9 @@ public class PinBusinessLayer : IPinBusinessLayer
     {
         return _pinDataLayer.SaveSettings(guildId, enableAutoMode);
     }
+
+    public Task<bool> SetPinVoteCount(string guildId, int pinVoteCount)
+    {
+        return _pinDataLayer.SetPinVoteCount(guildId, pinVoteCount);
+    }
 }

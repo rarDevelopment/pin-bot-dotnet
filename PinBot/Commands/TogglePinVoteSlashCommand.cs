@@ -3,20 +3,20 @@ using PinBot.BusinessLayer;
 
 namespace PinBot.Commands;
 
-public class ToggleAutoModeSlashCommand : InteractionModuleBase<SocketInteractionContext>
+public class TogglePinVoteSlashCommand : InteractionModuleBase<SocketInteractionContext>
 {
     private readonly IPinBusinessLayer _pinBusinessLayer;
     private readonly IDiscordFormatter _discordFormatter;
 
-    public ToggleAutoModeSlashCommand(IPinBusinessLayer pinBusinessLayer, IDiscordFormatter discordFormatter)
+    public TogglePinVoteSlashCommand(IPinBusinessLayer pinBusinessLayer, IDiscordFormatter discordFormatter)
     {
         _pinBusinessLayer = pinBusinessLayer;
         _discordFormatter = discordFormatter;
     }
 
-    [SlashCommand("set-auto-mode", "Enable or disable automatic mode. If off, allowed users can reply 📌 to pin a message.")]
-    public async Task SetAutoMode(
-        [Summary("auto-mode-setting", "Setting for auto mode - true for ON, false for OFF")] bool onOrOff
+    [SlashCommand("set-pin-voting", "Set the number of votes for a message to be pinned. React 📌 to vote.")]
+    public async Task TogglePinVote(
+        [Summary("pin-voting-count", "Setting the required number of votes for a post to be pinned. Set to 0 to disable pin voting.")] int voteCount
         )
     {
         await DeferAsync();
@@ -34,24 +34,24 @@ public class ToggleAutoModeSlashCommand : InteractionModuleBase<SocketInteractio
         {
             await FollowupAsync(embed:
                 _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
-                    "Sorry, you must have the Administrator permission to toggle auto mode.",
+                    "Sorry, you must have the Administrator permission to toggle pin voting mode.",
                     Context.User));
             return;
         }
 
-        var didSave = await _pinBusinessLayer.SaveSettings(Context.Guild.Id.ToString(), onOrOff);
+        var didSave = await _pinBusinessLayer.SetPinVoteCount(Context.Guild.Id.ToString(), voteCount);
         if (didSave)
         {
             await FollowupAsync(embed:
                 _discordFormatter.BuildRegularEmbed("Setting Changed",
-                    $"Auto Mode is now {(onOrOff ? "ON" : "OFF")}",
+                    $"Pin Voting is now {(voteCount > 0 ? "ON and set to require " + voteCount + " votes" : "OFF")}",
                     Context.User));
         }
         else
         {
             await FollowupAsync(embed:
                 _discordFormatter.BuildErrorEmbed("Error Changing Settings",
-                    "Could not save settings. Please contact the admin.",
+                    "Could not save this setting. Please contact the admin.",
                     Context.User));
         }
     }
