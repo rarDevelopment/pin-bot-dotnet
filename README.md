@@ -4,7 +4,7 @@ A Discord Bot for a better experience when pinning messages. PinBot allows you t
 
 Now written in C# and .NET 7.
 
-[Invite Role Bot to your Discord Server](https://discord.com/api/oauth2/authorize?client_id=830875816300380210&permissions=2684873936&scope=bot%20applications.commands)
+[Invite PinBot to your Discord Server](https://discord.com/api/oauth2/authorize?client_id=830875816300380210&permissions=2684873936&scope=bot%20applications.commands)
 
 [Discord Support Server](https://discord.gg/Za4NAtJJ9v)
 
