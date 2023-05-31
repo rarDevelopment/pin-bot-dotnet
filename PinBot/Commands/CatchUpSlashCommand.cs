@@ -18,7 +18,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         _discordFormatter = discordFormatter;
     }
 
-    [SlashCommand("catch-up", "Allow the users currently in the specified role to administrate the bot.")]
+    [SlashCommand("catch-up", "Converts all pinned messages in the specified channel. This cannot be undone!.")]
     public async Task CatchUpPins(
         [Summary("channel", "The channel in which to process all of the pins")] SocketTextChannel channel
         )
