@@ -1,6 +1,6 @@
 # PinBot
 
-A Discord Bot for a better experience when pinning messages. PinBot allows you to designate a channel to house your pins, rather than Discord's built-in pin feature, which means you won't be limited to the 100 pins you can store in a channel.
+A Discord Bot that provides a better experience when pinning messages. PinBot allows you to designate a channel to house your pins, rather than Discord's built-in pin feature, which means you won't be limited to the 100 pins you can store in a channel.
 
 Now written in C# and .NET 7.
 
