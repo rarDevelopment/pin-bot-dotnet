@@ -38,7 +38,13 @@ public class PinHandler
         };
 
         var textEmbed =
-            _discordFormatter.BuildRegularEmbed("", title, null, new List<EmbedFieldBuilder> { embedField });
+            _discordFormatter.BuildRegularEmbed("",
+                title,
+                embedFooterBuilder: null,
+                new List<EmbedFieldBuilder>
+                {
+                    embedField
+                });
 
         embedsToReturn.Add(textEmbed);
 
@@ -140,7 +146,8 @@ public class PinHandler
             {
                 var existingEmbed = _discordFormatter.BuildRegularEmbed(
                     "Message Already Pinned",
-                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()}).");
+                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()}).",
+                    embedFooterBuilder: null);
                 return new PinHandlerResult
                 {
                     IsSuccess = true,
@@ -217,7 +224,8 @@ public class PinHandler
 
         var embedToReturn = _discordFormatter.BuildRegularEmbed(
             "Message Pinned",
-            $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()}).");
+            $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()}).",
+            embedFooterBuilder: null);
 
         if (pinSystemMessage != null)
         {
@@ -273,7 +281,7 @@ public class PinHandler
                     continue;
                 }
 
-                var result = await HandlePin(pin, "BetterPinBot");
+                var result = await HandlePin(pin, "PinBot");
                 if (!result.IsSuccess)
                 {
                     continue;
