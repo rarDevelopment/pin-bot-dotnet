@@ -24,7 +24,7 @@ public class ToggleAutoModeSlashCommand : InteractionModuleBase<SocketInteractio
         if (Context.User is not IGuildUser requestingUser)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Invalid Action",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Invalid Action",
                     "Sorry, you need to be a valid user in a valid server to use this bot.",
                     Context.User));
             return;
@@ -33,7 +33,7 @@ public class ToggleAutoModeSlashCommand : InteractionModuleBase<SocketInteractio
         if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Insufficient Permissions",
                     "Sorry, you must have the Administrator permission to toggle auto mode.",
                     Context.User));
             return;
@@ -43,14 +43,14 @@ public class ToggleAutoModeSlashCommand : InteractionModuleBase<SocketInteractio
         if (didSave)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildRegularEmbed("Setting Changed",
+                _discordFormatter.BuildRegularEmbedWithUserFooter("Setting Changed",
                     $"Auto Mode is now {(onOrOff ? "ON" : "OFF")}",
                     Context.User));
         }
         else
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Error Changing Settings",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Error Changing Settings",
                     "Could not save settings. Please contact the admin.",
                     Context.User));
         }

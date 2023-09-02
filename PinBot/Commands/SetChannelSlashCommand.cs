@@ -29,7 +29,7 @@ public class SetChannelSlashCommand : InteractionModuleBase<SocketInteractionCon
         if (Context.User is not IGuildUser requestingUser)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Invalid Action",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Invalid Action",
                     "Sorry, you need to be a valid user in a valid server to use this bot.",
                     Context.User));
             return;
@@ -38,7 +38,7 @@ public class SetChannelSlashCommand : InteractionModuleBase<SocketInteractionCon
         if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Insufficient Permissions",
                     "Sorry, you must have the Administrator permission to change the pin channel.",
                     Context.User));
             return;
@@ -50,12 +50,12 @@ public class SetChannelSlashCommand : InteractionModuleBase<SocketInteractionCon
         {
             if (pinWebhook != null)
             {
-                await FollowupAsync(embed: _discordFormatter.BuildRegularEmbed("Current Pin Channel",
+                await FollowupAsync(embed: _discordFormatter.BuildRegularEmbedWithUserFooter("Current Pin Channel",
                     $"The pin channel is currently set to <#{pinWebhook.ChannelId}>", requestingUser));
                 return;
             }
 
-            await FollowupAsync(embed: _discordFormatter.BuildErrorEmbed("No Channel Set",
+            await FollowupAsync(embed: _discordFormatter.BuildErrorEmbedWithUserFooter("No Channel Set",
                 "Please provide a channel to set it as the pin channel.", requestingUser));
             return;
         }
@@ -79,12 +79,12 @@ public class SetChannelSlashCommand : InteractionModuleBase<SocketInteractionCon
                 if (didSave)
                 {
                     var channelMention = (webhookChannel as SocketTextChannel)?.Mention;
-                    await FollowupAsync(embed: _discordFormatter.BuildRegularEmbed("Pin Channel Set",
+                    await FollowupAsync(embed: _discordFormatter.BuildRegularEmbedWithUserFooter("Pin Channel Set",
                         $"Set {channelMention ?? $"<#{webhookChannel.Id}>"} as the pin channel", requestingUser));
                 }
                 else
                 {
-                    await FollowupAsync(embed: _discordFormatter.BuildErrorEmbed("Pin Channel Not Set",
+                    await FollowupAsync(embed: _discordFormatter.BuildErrorEmbedWithUserFooter("Pin Channel Not Set",
                         "There was an error setting the pin channel.", requestingUser));
                 }
             }

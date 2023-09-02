@@ -40,8 +40,7 @@ public class PinHandler
         var textEmbed =
             _discordFormatter.BuildRegularEmbed("",
                 title,
-                embedFooterBuilder: null,
-                new List<EmbedFieldBuilder>
+                embedFieldBuilders: new List<EmbedFieldBuilder>
                 {
                     embedField
                 });
@@ -146,8 +145,7 @@ public class PinHandler
             {
                 var existingEmbed = _discordFormatter.BuildRegularEmbed(
                     "Message Already Pinned",
-                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()}).",
-                    embedFooterBuilder: null);
+                    $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()}).");
                 return new PinHandlerResult
                 {
                     IsSuccess = true,
@@ -224,8 +222,7 @@ public class PinHandler
 
         var embedToReturn = _discordFormatter.BuildRegularEmbed(
             "Message Pinned",
-            $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()}).",
-            embedFooterBuilder: null);
+            $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()}).");
 
         if (pinSystemMessage != null)
         {

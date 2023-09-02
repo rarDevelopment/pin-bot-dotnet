@@ -28,7 +28,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         if (Context.User is not IGuildUser requestingUser)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Invalid Action",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Invalid Action",
                     "Sorry, you need to be a valid user in a valid server to use this bot.",
                     Context.User));
             return;
@@ -37,7 +37,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Insufficient Permissions",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Insufficient Permissions",
                     "Sorry, you must have the Administrator permission to run the bulk pin catch-up command.",
                     Context.User));
             return;
@@ -47,7 +47,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         if (bulkPinResult.IsSuccess)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildRegularEmbed("Catch-Up Process Complete!",
+                _discordFormatter.BuildRegularEmbedWithUserFooter("Catch-Up Process Complete!",
                     $"The catch-up process should now be complete! Please verify that your pins have been updated in {channel.Mention}",
                     Context.User));
             return;
@@ -55,7 +55,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         else
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbed("Catch-Up Process Error",
+                _discordFormatter.BuildErrorEmbedWithUserFooter("Catch-Up Process Error",
                     "Sorry, there was an error with the catch-up process.",
                     Context.User));
             return;
