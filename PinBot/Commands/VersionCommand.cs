@@ -17,7 +17,7 @@ namespace PinBot.Commands
         [SlashCommand("version", "Get the current version number of the bot.")]
         public async Task VersionSlashCommand()
         {
-            await RespondAsync(embed: _discordFormatter.BuildRegularEmbed("Bot Version",
+            await RespondAsync(embed: _discordFormatter.BuildRegularEmbedWithUserFooter("Bot Version",
                 $"PinBot is at version **{_versionSettings.VersionNumber}**",
                 Context.User));
         }
