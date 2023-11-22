@@ -3,20 +3,12 @@ using PinBot.BusinessLayer;
 
 namespace PinBot.Commands;
 
-public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContext>
-{
-    private readonly IPinBusinessLayer _pinBusinessLayer;
-    private readonly PinHandler _pinHandler;
-    private readonly IDiscordFormatter _discordFormatter;
-
-    public CatchUpSlashCommand(IPinBusinessLayer pinBusinessLayer,
+public class CatchUpSlashCommand(IPinBusinessLayer pinBusinessLayer,
         PinHandler pinHandler,
         IDiscordFormatter discordFormatter)
-    {
-        _pinBusinessLayer = pinBusinessLayer;
-        _pinHandler = pinHandler;
-        _discordFormatter = discordFormatter;
-    }
+    : InteractionModuleBase<SocketInteractionContext>
+{
+    private readonly IPinBusinessLayer _pinBusinessLayer = pinBusinessLayer;
 
     [SlashCommand("catch-up", "Converts all pinned messages in the specified channel. This cannot be undone!.")]
     public async Task CatchUpPins(
@@ -28,7 +20,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         if (Context.User is not IGuildUser requestingUser)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbedWithUserFooter("Invalid Action",
+                discordFormatter.BuildErrorEmbedWithUserFooter("Invalid Action",
                     "Sorry, you need to be a valid user in a valid server to use this bot.",
                     Context.User));
             return;
@@ -37,17 +29,17 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         if (!requestingUser.GuildPermissions.Administrator)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbedWithUserFooter("Insufficient Permissions",
+                discordFormatter.BuildErrorEmbedWithUserFooter("Insufficient Permissions",
                     "Sorry, you must have the Administrator permission to run the bulk pin catch-up command.",
                     Context.User));
             return;
         }
 
-        var bulkPinResult = await _pinHandler.ProcessPinBacklogInChannel(channel);
+        var bulkPinResult = await pinHandler.ProcessPinBacklogInChannel(channel);
         if (bulkPinResult.IsSuccess)
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildRegularEmbedWithUserFooter("Catch-Up Process Complete!",
+                discordFormatter.BuildRegularEmbedWithUserFooter("Catch-Up Process Complete!",
                     $"The catch-up process should now be complete! Please verify that your pins have been updated in {channel.Mention}",
                     Context.User));
             return;
@@ -55,7 +47,7 @@ public class CatchUpSlashCommand : InteractionModuleBase<SocketInteractionContex
         else
         {
             await FollowupAsync(embed:
-                _discordFormatter.BuildErrorEmbedWithUserFooter("Catch-Up Process Error",
+                discordFormatter.BuildErrorEmbedWithUserFooter("Catch-Up Process Error",
                     "Sorry, there was an error with the catch-up process.",
                     Context.User));
             return;

@@ -3,15 +3,8 @@ using PinBot.Models;
 
 namespace PinBot.BusinessLayer;
 
-public class PinBusinessLayer : IPinBusinessLayer
+public class PinBusinessLayer(IPinDataLayer pinDataLayer) : IPinBusinessLayer
 {
-    private readonly IPinDataLayer _pinDataLayer;
-
-    public PinBusinessLayer(IPinDataLayer pinDataLayer)
-    {
-        _pinDataLayer = pinDataLayer;
-    }
-
     public Task<bool> SavePin(
         string messageId,
         string guildId,
@@ -21,51 +14,51 @@ public class PinBusinessLayer : IPinBusinessLayer
         string newPinMessageId,
         string pinChannelId)
     {
-        return _pinDataLayer.SavePin(messageId, guildId, channelId, userId, datePinned, newPinMessageId, pinChannelId);
+        return pinDataLayer.SavePin(messageId, guildId, channelId, userId, datePinned, newPinMessageId, pinChannelId);
     }
 
     public Task<bool> DeleteByMessageId(string messageId, string guildId)
     {
-        return _pinDataLayer.DeleteByMessageId(messageId, guildId);
+        return pinDataLayer.DeleteByMessageId(messageId, guildId);
     }
 
     public Task<bool> DeleteByPinId(string pinMessageId, string guildId)
     {
-        return _pinDataLayer.DeleteByPinId(pinMessageId, guildId);
+        return pinDataLayer.DeleteByPinId(pinMessageId, guildId);
     }
 
     public Task<PinnedMessage?> GetPinnedMessage(string messageId, string guildId)
     {
-        return _pinDataLayer.GetPinnedMessage(messageId, guildId);
+        return pinDataLayer.GetPinnedMessage(messageId, guildId);
     }
 
     public Task<PinnedMessage?> GetPinnedMessageByPinId(string pinId, string guildId)
     {
-        return _pinDataLayer.GetPinnedMessageByPinId(pinId, guildId);
+        return pinDataLayer.GetPinnedMessageByPinId(pinId, guildId);
     }
 
     public Task<bool> SetWebhook(string webhookId, string guildId, string token, string channelId)
     {
-        return _pinDataLayer.SetWebhook(webhookId, guildId, token, channelId);
+        return pinDataLayer.SetWebhook(webhookId, guildId, token, channelId);
     }
 
     public Task<Webhook?> GetWebhook(string guildId)
     {
-        return _pinDataLayer.GetWebhook(guildId);
+        return pinDataLayer.GetWebhook(guildId);
     }
 
     public Task<Settings?> GetSettings(string guildId)
     {
-        return _pinDataLayer.GetSettings(guildId);
+        return pinDataLayer.GetSettings(guildId);
     }
 
     public Task<bool> SaveSettings(string guildId, bool enableAutoMode)
     {
-        return _pinDataLayer.SaveSettings(guildId, enableAutoMode);
+        return pinDataLayer.SaveSettings(guildId, enableAutoMode);
     }
 
     public Task<bool> SetPinVoteCount(string guildId, int pinVoteCount)
     {
-        return _pinDataLayer.SetPinVoteCount(guildId, pinVoteCount);
+        return pinDataLayer.SetPinVoteCount(guildId, pinVoteCount);
     }
 }

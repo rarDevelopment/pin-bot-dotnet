@@ -4,19 +4,11 @@ using PinBot.Notifications;
 
 namespace PinBot.EventHandlers;
 
-public class MessageReceivedNotificationHandler : INotificationHandler<MessageReceivedNotification>
+public class MessageReceivedNotificationHandler(IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler,
+        ILogger<DiscordBot> logger)
+    : INotificationHandler<MessageReceivedNotification>
 {
     private const string PinEmoji = "📌";
-    private readonly IPinBusinessLayer _pinBusinessLayer;
-    private readonly PinHandler _pinHandler;
-    private readonly ILogger<DiscordBot> _logger;
-
-    public MessageReceivedNotificationHandler(IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler, ILogger<DiscordBot> logger)
-    {
-        _pinBusinessLayer = pinBusinessLayer;
-        _pinHandler = pinHandler;
-        _logger = logger;
-    }
 
     public Task Handle(MessageReceivedNotification notification, CancellationToken cancellationToken)
     {
@@ -31,11 +23,11 @@ public class MessageReceivedNotificationHandler : INotificationHandler<MessageRe
 
             if (!notification.Message.Reference.MessageId.IsSpecified)
             {
-                _logger.LogWarning("This was a pin message but with no message reference id. This might be a cache issue.");
+                logger.LogWarning("This was a pin message but with no message reference id. This might be a cache issue.");
                 return Task.CompletedTask;
             }
 
-            var settings = await _pinBusinessLayer.GetSettings(guildChannel.Guild.Id.ToString());
+            var settings = await pinBusinessLayer.GetSettings(guildChannel.Guild.Id.ToString());
             if (settings == null)
             {
                 return Task.CompletedTask;
@@ -51,7 +43,7 @@ public class MessageReceivedNotificationHandler : INotificationHandler<MessageRe
 
                 var messageToBePinned =
                     await guildChannel.GetMessageAsync(notification.Message.Reference.MessageId.Value);
-                var pinResult = await _pinHandler.HandlePin(messageToBePinned,
+                var pinResult = await pinHandler.HandlePin(messageToBePinned,
                     notification.Message.Author.Username, notification.Message);
                 if (pinResult.IsSuccess)
                 {
@@ -85,7 +77,7 @@ public class MessageReceivedNotificationHandler : INotificationHandler<MessageRe
 
             var messageToPin =
                 await guildChannel.GetMessageAsync(notification.Message.Reference.MessageId.Value);
-            var pinHandlerResult = await _pinHandler.HandlePin(messageToPin,
+            var pinHandlerResult = await pinHandler.HandlePin(messageToPin,
                 notification.Message.Author.Username, notification.Message);
             if (pinHandlerResult.IsSuccess)
             {
