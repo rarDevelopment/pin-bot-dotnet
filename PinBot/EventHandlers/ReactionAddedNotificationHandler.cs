@@ -4,18 +4,12 @@ using PinBot.Notifications;
 
 namespace PinBot.EventHandlers;
 
-public class ReactionAddedNotificationHandler : INotificationHandler<ReactionAddedNotification>
+public class ReactionAddedNotificationHandler
+    (IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler) : INotificationHandler<ReactionAddedNotification>
 {
-    private readonly IPinBusinessLayer _pinBusinessLayer;
-    private readonly PinHandler _pinHandler;
     private readonly Emoji _pinEmoji = new("📌");
     private const int UserListLimit = 5;
 
-    public ReactionAddedNotificationHandler(IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler)
-    {
-        _pinBusinessLayer = pinBusinessLayer;
-        _pinHandler = pinHandler;
-    }
     public Task Handle(ReactionAddedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>
@@ -44,7 +38,7 @@ public class ReactionAddedNotificationHandler : INotificationHandler<ReactionAdd
                 return Task.CompletedTask;
             }
 
-            var config = await _pinBusinessLayer.GetSettings(guildChannel.GuildId.ToString());
+            var config = await pinBusinessLayer.GetSettings(guildChannel.GuildId.ToString());
             if (config is not { PinVoteCount: > 0 })
             {
                 return Task.CompletedTask;
@@ -73,7 +67,7 @@ public class ReactionAddedNotificationHandler : INotificationHandler<ReactionAdd
                     reactionUserNames)
                 : $"{pinReactions.ReactionCount} Votes";
 
-            var pinResult = await _pinHandler.HandlePin(message,  pinningUserNames);
+            var pinResult = await pinHandler.HandlePin(message,  pinningUserNames);
             if (pinResult.IsSuccess)
             {
                 await message.Channel.SendMessageAsync(embed: pinResult.EmbedToSend,

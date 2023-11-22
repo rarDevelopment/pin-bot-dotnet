@@ -5,21 +5,11 @@ using PinBot.BusinessLayer;
 
 namespace PinBot;
 
-public class PinHandler
+public class PinHandler(IPinBusinessLayer pinBusinessLayer, IDiscordFormatter discordFormatter, ILogger<DiscordBot> logger)
 {
-    private readonly IPinBusinessLayer _pinBusinessLayer;
-    private readonly IDiscordFormatter _discordFormatter;
-    private readonly ILogger<DiscordBot> _logger;
     private const int MaxMessageContentLength = 800;
     private const string TruncateSuffix = "[...]";
     private const string MessageLinkText = "View the message";
-
-    public PinHandler(IPinBusinessLayer pinBusinessLayer, IDiscordFormatter discordFormatter, ILogger<DiscordBot> logger)
-    {
-        _pinBusinessLayer = pinBusinessLayer;
-        _discordFormatter = discordFormatter;
-        _logger = logger;
-    }
 
     public IList<Embed> BuildPinEmbeds(IMessage messageToPin, string username)
     {
@@ -38,7 +28,7 @@ public class PinHandler
         };
 
         var textEmbed =
-            _discordFormatter.BuildRegularEmbed("",
+            discordFormatter.BuildRegularEmbed("",
                 title,
                 embedFieldBuilders: new List<EmbedFieldBuilder>
                 {
@@ -125,7 +115,7 @@ public class PinHandler
             };
         }
 
-        var pinWebhook = await _pinBusinessLayer.GetWebhook(guildChannel.GuildId.ToString());
+        var pinWebhook = await pinBusinessLayer.GetWebhook(guildChannel.GuildId.ToString());
         if (pinWebhook == null)
         {
             return new PinHandlerResult
@@ -135,7 +125,7 @@ public class PinHandler
             };
         }
 
-        var getExistingPinnedMessage = await _pinBusinessLayer.GetPinnedMessage(messageToPin.Id.ToString(), guildChannel.GuildId.ToString());
+        var getExistingPinnedMessage = await pinBusinessLayer.GetPinnedMessage(messageToPin.Id.ToString(), guildChannel.GuildId.ToString());
 
         if (getExistingPinnedMessage != null)
         {
@@ -143,7 +133,7 @@ public class PinHandler
             var existingPin = await channelWithPin.GetMessageAsync(Convert.ToUInt64(getExistingPinnedMessage.NewPinMessageId));
             if (existingPin != null)
             {
-                var existingEmbed = _discordFormatter.BuildRegularEmbed(
+                var existingEmbed = discordFormatter.BuildRegularEmbed(
                     "Message Already Pinned",
                     $"This [message]({messageToPin.GetJumpUrl()}) was already pinned! Check out [the pin]({existingPin.GetJumpUrl()}).");
                 return new PinHandlerResult
@@ -153,7 +143,7 @@ public class PinHandler
                 };
             }
 
-            await _pinBusinessLayer.DeleteByMessageId(messageToPin.Id.ToString(), guildChannel.GuildId.ToString());
+            await pinBusinessLayer.DeleteByMessageId(messageToPin.Id.ToString(), guildChannel.GuildId.ToString());
         }
 
         var pinChannel = await guildChannel.Guild.GetChannelAsync(Convert.ToUInt64(pinWebhook.ChannelId));
@@ -201,7 +191,7 @@ public class PinHandler
             };
         }
 
-        var didSave = await _pinBusinessLayer.SavePin(messageToPin.Id.ToString(),
+        var didSave = await pinBusinessLayer.SavePin(messageToPin.Id.ToString(),
             guildChannel.GuildId.ToString(),
             guildChannel.Id.ToString(),
             messageToPin.Author.Id.ToString(),
@@ -211,7 +201,7 @@ public class PinHandler
 
         if (!didSave)
         {
-            _logger.LogError($"Failed to save pin of message {messageToPin.Id} to database. Removing pin.");
+            logger.LogError($"Failed to save pin of message {messageToPin.Id} to database. Removing pin.");
             await newPinMessage.DeleteAsync();
             return new PinHandlerResult
             {
@@ -220,7 +210,7 @@ public class PinHandler
             };
         }
 
-        var embedToReturn = _discordFormatter.BuildRegularEmbed(
+        var embedToReturn = discordFormatter.BuildRegularEmbed(
             "Message Pinned",
             $"{pinningUserName} just pinned [a message]({messageToPin.GetJumpUrl()}). Check out [the pin]({newPinMessage.GetJumpUrl()}).");
 
@@ -238,7 +228,7 @@ public class PinHandler
 
     public async Task<BulkPinHandlerResult> ProcessPinBacklogInChannel(SocketTextChannel channel)
     {
-        var pinWebhook = await _pinBusinessLayer.GetWebhook(channel.Guild.Id.ToString());
+        var pinWebhook = await pinBusinessLayer.GetWebhook(channel.Guild.Id.ToString());
         if (pinWebhook == null)
         {
             return new BulkPinHandlerResult
@@ -291,7 +281,7 @@ public class PinHandler
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Could not pin message with identifier {pin?.Id.ToString() ?? "[no identifier]"} - {ex.Message}");
+                logger.LogError($"Could not pin message with identifier {pin?.Id.ToString() ?? "[no identifier]"} - {ex.Message}");
             }
         }
 
@@ -329,7 +319,7 @@ public class PinHandler
             }
         }
 
-        _logger.LogError("Could not get content_type or filename for this attachment {0}", attachment.Id);
+        logger.LogError("Could not get content_type or filename for this attachment {0}", attachment.Id);
 
         return null;
     }

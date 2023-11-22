@@ -2,16 +2,11 @@
 
 namespace PinBot.Notifications;
 
-public class MessageUpdatedNotification : INotification
+public class MessageUpdatedNotification(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage,
+        ISocketMessageChannel channel)
+    : INotification
 {
-    public Cacheable<IMessage, ulong> OldMessage { get; }
-    public SocketMessage NewMessage { get; }
-    public ISocketMessageChannel Channel { get; }
-
-    public MessageUpdatedNotification(Cacheable<IMessage, ulong> oldMessage, SocketMessage newMessage, ISocketMessageChannel channel)
-    {
-        OldMessage = oldMessage;
-        NewMessage = newMessage;
-        Channel = channel;
-    }
+    public Cacheable<IMessage, ulong> OldMessage { get; } = oldMessage;
+    public SocketMessage NewMessage { get; } = newMessage;
+    public ISocketMessageChannel Channel { get; } = channel;
 }
