@@ -10,8 +10,6 @@ public class MessageUpdatedNotificationHandler(DiscordSocketClient client,
         ILogger<DiscordBot> logger)
     : INotificationHandler<MessageUpdatedNotification>
 {
-    private readonly DiscordSocketClient _client = client;
-
     public Task Handle(MessageUpdatedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>

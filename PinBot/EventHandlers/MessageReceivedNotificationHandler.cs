@@ -4,9 +4,11 @@ using PinBot.Notifications;
 
 namespace PinBot.EventHandlers;
 
-public class MessageReceivedNotificationHandler(IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler,
-        ILogger<DiscordBot> logger)
-    : INotificationHandler<MessageReceivedNotification>
+public class MessageReceivedNotificationHandler(
+    IPinBusinessLayer pinBusinessLayer,
+    PinHandler pinHandler,
+    ILogger<DiscordBot> logger)
+    : InteractionModuleBase<SocketInteractionContext>, INotificationHandler<MessageReceivedNotification>
 {
     private const string PinEmoji = "📌";
 
@@ -35,38 +37,18 @@ public class MessageReceivedNotificationHandler(IPinBusinessLayer pinBusinessLay
 
             if (!settings.EnableAutoMode)
             {
-                if (notification.Message.Author is not IGuildUser { GuildPermissions.ManageMessages: true } ||
-                    !notification.Message.Content.Contains(PinEmoji))
-                {
-                    return Task.CompletedTask;
-                }
-
-                var messageToBePinned =
+                var messageForButton =
                     await guildChannel.GetMessageAsync(notification.Message.Reference.MessageId.Value);
-                var pinResult = await pinHandler.HandlePin(messageToBePinned,
-                    notification.Message.Author.Username, notification.Message);
-                if (pinResult.IsSuccess)
-                {
-                    if (messageToBePinned is IUserMessage messageToUnpin)
-                    {
-                        await messageToUnpin.UnpinAsync();
-                    }
-                    else
-                    {
-                        await notification.Message.Channel.SendMessageAsync(
-                            "There was an error unpinning this message from the channel.");
-                    }
+                await notification.Message.DeleteAsync();
 
-                    await notification.Message.Channel.SendMessageAsync(embed: pinResult.EmbedToSend,
-                        messageReference: new MessageReference(messageToBePinned.Id,
-                            guildChannel.Id,
-                            guildChannel.Guild.Id,
-                            false));
-                }
-                else
-                {
-                    await notification.Message.Channel.SendMessageAsync("There was an error pinning this message.");
-                }
+                var buttonBuilder = new ComponentBuilder()
+                    .WithButton("Pin In Channel", $"pinMessage:{messageForButton.Id}:{notification.Message.Author.Username}", emote: new Emoji("📌"));
+
+                await notification.Message.Channel.SendMessageAsync(
+                    "This message was pinned in this channel's pins. If you want to pin it to the server's pin channel instead, click the button below.",
+                    messageReference: notification.Message.Reference,
+                    components: buttonBuilder.Build());
+
                 return Task.CompletedTask;
             }
 
@@ -110,5 +92,51 @@ public class MessageReceivedNotificationHandler(IPinBusinessLayer pinBusinessLay
     {
         return notificationMessage.Type == MessageType.ChannelPinnedMessage
                || notificationMessage.Content.Contains(PinEmoji);
+    }
+
+    [ComponentInteraction("pinMessage:*:*")]
+    public async Task? ManualPinButton(ulong messageToPinId, string pinUserName)
+    {
+        if (Context.User is not IGuildUser { GuildPermissions.ManageMessages: true })
+        {
+            await Context.Channel.SendMessageAsync(
+                "You did not pin this message so you are not allowed to decide to move it to the server's pin channel.");
+            return;
+        }
+
+        await DeferAsync();
+
+        var messageToBePinned =
+            await Context.Channel.GetMessageAsync(messageToPinId);
+
+        var pinResult = await pinHandler.HandlePin(messageToBePinned, pinUserName);
+        if (pinResult.IsSuccess)
+        {
+            if (messageToBePinned is IUserMessage messageToUnpin)
+            {
+                await messageToUnpin.UnpinAsync();
+
+                var messageWithButton = ((IComponentInteraction)Context.Interaction).Message;
+                await messageWithButton.DeleteAsync();
+            }
+            else
+            {
+                await Context.Channel.SendMessageAsync(
+                    "There was an error unpinning this message from the channel.");
+            }
+
+            await ReplyAsync(embed: pinResult.EmbedToSend,
+            messageReference: new MessageReference(messageToBePinned.Id,
+                Context.Channel.Id,
+                (Context.Channel as IGuildChannel)!.Guild.Id,
+                false));
+        }
+        else
+        {
+            await ReplyAsync("There was an error pinning this message.",
+                messageReference: new MessageReference(messageToBePinned.Id,
+                Context.Channel.Id,
+                (Context.Channel as IGuildChannel)!.Guild.Id));
+        }
     }
 }
