@@ -10,8 +10,6 @@ public class MessageReceivedNotificationHandler(
     ILogger<DiscordBot> logger)
     : InteractionModuleBase<SocketInteractionContext>, INotificationHandler<MessageReceivedNotification>
 {
-    private const string PinEmoji = "📌";
-
     public Task Handle(MessageReceivedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>
@@ -70,8 +68,7 @@ public class MessageReceivedNotificationHandler(
                 }
                 else
                 {
-                    await notification.Message.Channel.SendMessageAsync(
-                        "There was an error unpinning this message from the channel.");
+                    await notification.Message.Channel.SendMessageAsync("There was an error unpinning this message from the channel.");
                 }
 
                 await notification.Message.Channel.SendMessageAsync(embed: pinHandlerResult.EmbedToSend,
@@ -92,14 +89,14 @@ public class MessageReceivedNotificationHandler(
     [ComponentInteraction("pinMessage:*:*:*")]
     public async Task? ManualPinButton(ulong messageToPinId, ulong systemPinMessageId, string pinUserName)
     {
+        await DeferAsync(ephemeral: true);
+
         if (Context.User is not IGuildUser { GuildPermissions.ManageMessages: true })
         {
-            await Context.Channel.SendMessageAsync(
-                $"{Context.User.Mention} you do not have permission to manage messages so you cannot pin this message.");
+            await FollowupAsync(
+                $"{Context.User.Mention} you do not have permission to manage messages so you cannot pin this message.", ephemeral: true);
             return;
         }
-
-        await DeferAsync();
 
         var messageToBePinned =
             await Context.Channel.GetMessageAsync(messageToPinId);
