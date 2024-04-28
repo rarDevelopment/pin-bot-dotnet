@@ -16,9 +16,12 @@ public class MessageReceivedNotificationHandler(
     {
         _ = Task.Run(async () =>
         {
-            if (notification.Message.Channel is not SocketTextChannel guildChannel ||
-                !IsRelevantPinMessage(notification.Message) ||
-                notification.Message.Reference == null)
+            if (notification.Message.Channel is not SocketTextChannel guildChannel || notification.Message.Reference == null)
+            {
+                return Task.CompletedTask;
+            }
+
+            if (notification.Message.Type != MessageType.ChannelPinnedMessage)
             {
                 return Task.CompletedTask;
             }
@@ -39,21 +42,19 @@ public class MessageReceivedNotificationHandler(
             {
                 var messageForButton =
                     await guildChannel.GetMessageAsync(notification.Message.Reference.MessageId.Value);
-                await notification.Message.DeleteAsync();
+
+                var pinWebhook = await pinBusinessLayer.GetWebhook(guildChannel.Guild.Id.ToString());
+                var pinChannelMention = pinWebhook != null ? $"<#{pinWebhook.ChannelId}>" : "";
 
                 var buttonBuilder = new ComponentBuilder()
-                    .WithButton("Pin In Channel", $"pinMessage:{messageForButton.Id}:{notification.Message.Author.Username}", emote: new Emoji("📌"));
+                    .WithButton("Pin in the Pin Channel", $"pinMessage:{messageForButton.Id}:{notification.Message.Id}:{notification.Message.Author.Username}", emote: new Emoji("📌"))
+                    .WithButton("Dismiss This Message", $"dismissMessage");
 
                 await notification.Message.Channel.SendMessageAsync(
-                    "This message was pinned in this channel's pins. If you want to pin it to the server's pin channel instead, click the button below.",
+                    $"This message was pinned in this channel's pins. If you want to pin it to the server's pin channel ({pinChannelMention}) instead, click the button below.",
                     messageReference: notification.Message.Reference,
                     components: buttonBuilder.Build());
 
-                return Task.CompletedTask;
-            }
-
-            if (notification.Message.Type != MessageType.ChannelPinnedMessage)
-            {
                 return Task.CompletedTask;
             }
 
@@ -88,19 +89,13 @@ public class MessageReceivedNotificationHandler(
         return Task.CompletedTask;
     }
 
-    private static bool IsRelevantPinMessage(IMessage notificationMessage)
-    {
-        return notificationMessage.Type == MessageType.ChannelPinnedMessage
-               || notificationMessage.Content.Contains(PinEmoji);
-    }
-
-    [ComponentInteraction("pinMessage:*:*")]
-    public async Task? ManualPinButton(ulong messageToPinId, string pinUserName)
+    [ComponentInteraction("pinMessage:*:*:*")]
+    public async Task? ManualPinButton(ulong messageToPinId, ulong systemPinMessageId, string pinUserName)
     {
         if (Context.User is not IGuildUser { GuildPermissions.ManageMessages: true })
         {
             await Context.Channel.SendMessageAsync(
-                "You did not pin this message so you are not allowed to decide to move it to the server's pin channel.");
+                $"{Context.User.Mention} you do not have permission to manage messages so you cannot pin this message.");
             return;
         }
 
@@ -108,8 +103,9 @@ public class MessageReceivedNotificationHandler(
 
         var messageToBePinned =
             await Context.Channel.GetMessageAsync(messageToPinId);
+        var messageToDelete = await Context.Channel.GetMessageAsync(systemPinMessageId);
 
-        var pinResult = await pinHandler.HandlePin(messageToBePinned, pinUserName);
+        var pinResult = await pinHandler.HandlePin(messageToBePinned, pinUserName, messageToDelete);
         if (pinResult.IsSuccess)
         {
             if (messageToBePinned is IUserMessage messageToUnpin)
@@ -138,5 +134,16 @@ public class MessageReceivedNotificationHandler(
                 Context.Channel.Id,
                 (Context.Channel as IGuildChannel)!.Guild.Id));
         }
+    }
+
+    [ComponentInteraction("dismissMessage")]
+    public async Task DismissMessageButton()
+    {
+        if (Context.User is not IGuildUser { GuildPermissions.ManageMessages: true })
+        {
+            return;
+        }
+        var messageWithButton = ((IComponentInteraction)Context.Interaction).Message;
+        await messageWithButton.DeleteAsync();
     }
 }
