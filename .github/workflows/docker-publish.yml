@@ -2,8 +2,8 @@
 
 on:
   push:
-    tags:
-      - '*'
+    branches:
+      - main
 env:
   IMAGE_NAME: pinbot
   REGISTRY: ghcr.io
