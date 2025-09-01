@@ -5,15 +5,16 @@ global using Microsoft.Extensions.Configuration;
 global using Microsoft.Extensions.Logging;
 using DiscordDotNetUtilities;
 using DiscordDotNetUtilities.Interfaces;
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using PinBot;
-using Serilog;
-using System.Reflection;
 using PinBot.BusinessLayer;
 using PinBot.DataLayer;
+using PinBot.EventHandlers;
 using PinBot.Models;
+using PinBot.Notifications;
+using Serilog;
+using System.Reflection;
 
 var builder = new HostBuilder();
 
@@ -75,7 +76,12 @@ builder.ConfigureServices((host, services) =>
 
     services.AddSingleton<InteractionHandler>();
 
-    services.AddMediatR(cfg => cfg.RegisterServicesFromAssemblies(typeof(DiscordBot).GetTypeInfo().Assembly));
+    services.AddScoped<IEventBus, EventBus>();
+
+    services.AddScoped<IEventHandler<MessageReceivedNotification>, MessageReceivedNotificationHandler>();
+    services.AddScoped<IEventHandler<ReactionAddedNotification>, ReactionAddedNotificationHandler>();
+    services.AddScoped<IEventHandler<MessageDeletedNotification>, MessageDeletedNotificationHandler>();
+    services.AddScoped<IEventHandler<MessageUpdatedNotification>, MessageUpdatedNotificationHandler>();
 
     services.AddHostedService<DiscordBot>();
 });
