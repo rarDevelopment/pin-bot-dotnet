@@ -1,13 +1,13 @@
-﻿using MediatR;
+﻿using DiscordDotNetUtilities.Interfaces;
 using PinBot.BusinessLayer;
 using PinBot.Notifications;
 
 namespace PinBot.EventHandlers;
 public class MessageDeletedNotificationHandler(DiscordSocketClient client, IPinBusinessLayer pinBusinessLayer,
         ILogger<DiscordBot> logger)
-    : INotificationHandler<MessageDeletedNotification>
+    : IEventHandler<MessageDeletedNotification>
 {
-    public Task Handle(MessageDeletedNotification notification, CancellationToken cancellationToken)
+    public Task HandleAsync(MessageDeletedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>
         {

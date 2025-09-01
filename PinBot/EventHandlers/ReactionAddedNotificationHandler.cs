@@ -1,16 +1,16 @@
-﻿using MediatR;
+﻿using DiscordDotNetUtilities.Interfaces;
 using PinBot.BusinessLayer;
 using PinBot.Notifications;
 
 namespace PinBot.EventHandlers;
 
 public class ReactionAddedNotificationHandler
-    (IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler) : INotificationHandler<ReactionAddedNotification>
+    (IPinBusinessLayer pinBusinessLayer, PinHandler pinHandler) : IEventHandler<ReactionAddedNotification>
 {
     private readonly Emoji _pinEmoji = new("📌");
     private const int UserListLimit = 5;
 
-    public Task Handle(ReactionAddedNotification notification, CancellationToken cancellationToken)
+    public Task HandleAsync(ReactionAddedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>
         {

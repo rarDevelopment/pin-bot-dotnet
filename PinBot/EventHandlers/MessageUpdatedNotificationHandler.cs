@@ -1,5 +1,5 @@
 ﻿using Discord.Webhook;
-using MediatR;
+using DiscordDotNetUtilities.Interfaces;
 using PinBot.BusinessLayer;
 using PinBot.Notifications;
 
@@ -8,9 +8,9 @@ public class MessageUpdatedNotificationHandler(DiscordSocketClient client,
         IPinBusinessLayer pinBusinessLayer,
         PinHandler pinHandler,
         ILogger<DiscordBot> logger)
-    : INotificationHandler<MessageUpdatedNotification>
+    : IEventHandler<MessageUpdatedNotification>
 {
-    public Task Handle(MessageUpdatedNotification notification, CancellationToken cancellationToken)
+    public Task HandleAsync(MessageUpdatedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>
         {

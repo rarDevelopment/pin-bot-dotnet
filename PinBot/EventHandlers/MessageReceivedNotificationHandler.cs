@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using DiscordDotNetUtilities.Interfaces;
 using PinBot.BusinessLayer;
 using PinBot.Notifications;
 
@@ -8,9 +8,9 @@ public class MessageReceivedNotificationHandler(
     IPinBusinessLayer pinBusinessLayer,
     PinHandler pinHandler,
     ILogger<DiscordBot> logger)
-    : InteractionModuleBase<SocketInteractionContext>, INotificationHandler<MessageReceivedNotification>
+    : InteractionModuleBase<SocketInteractionContext>, IEventHandler<MessageReceivedNotification>
 {
-    public Task Handle(MessageReceivedNotification notification, CancellationToken cancellationToken)
+    public Task HandleAsync(MessageReceivedNotification notification, CancellationToken cancellationToken)
     {
         _ = Task.Run(async () =>
         {
